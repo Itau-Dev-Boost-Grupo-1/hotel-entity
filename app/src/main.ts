@@ -1,25 +1,56 @@
 import "reflect-metadata";
 import express, { Application, Request, Response } from "express";
 import { Connection, createConnection, Repository } from "typeorm";
-import User from "./repository/User";
-import Todo from "./repository/Todo";
+
+import Hotel from "./models/Hotel";
+import Room from "./models/Room";
+import Reservation from "./models/Reservation";
+
 
 const app: Application = express();
 
 // carrega o json enviado no corpo(body)
 app.use(express.json());
 
-app.get("/users", async (req: Request, res: Response): Promise<Response> => {
+app.get("/hotels", async (req: Request, res: Response): Promise<Response> => {
     const connection = await createConnection();
 
-    const userRepository: Repository<User> = connection.getRepository(User);
+    const hotelRepository: Repository<Hotel> = connection.getRepository(Hotel);
 
-    const users: User[] = await userRepository.find();
-    
+    const hotels: Hotel[] = await hotelRepository.find();
+
     connection.close();
 
     return res.json({
-        users
+        hotels
+    });
+});
+
+app.get("/rooms", async (req: Request, res: Response): Promise<Response> => {
+    const connection = await createConnection();
+
+    const roomRepository: Repository<Room> = connection.getRepository(Room);
+
+    const rooms: Room[] = await roomRepository.find();
+
+    connection.close();
+
+    return res.json({
+        rooms
+    });
+});
+
+app.get("/reservations", async (req: Request, res: Response): Promise<Response> => {
+    const connection = await createConnection();
+
+    const reservationRepository: Repository<Reservation> = connection.getRepository(Reservation);
+
+    const reservations: Reservation[] = await reservationRepository.find();
+
+    connection.close();
+
+    return res.json({
+        reservations
     });
 });
 
@@ -39,23 +70,22 @@ app.post("/users", async (req: Request, res: Response): Promise<Response> => {
     });
 });
 
-app.put("/users", async (req: Request, res: Response): Promise<Response> => {
+app.put("/hotels", async (req: Request, res: Response): Promise<Response> => {
     const connection = await createConnection();
 
-    const userRepository: Repository<User> = connection.getRepository(User);
+    const hotelRepository: Repository<Hotel> = connection.getRepository(Hotel);
 
-    const user: User | undefined = await userRepository.findOne(req.body.id);
+    const hotel: Hotel | undefined = await hotelRepository.findOne(req.body.id);
 
-    if (user !== undefined) {
-        user.nome = req.body.nome;
-        user.email = req.body.email;
+    if (hotel !== undefined) {
+        hotel.nome = req.body.nome;
 
-        await userRepository.save(user);
+        await hotelRepository.save(hotel);
 
         connection.close();
         
         return res.json({
-            user
+            hotel
         });
     }
 
@@ -64,47 +94,76 @@ app.put("/users", async (req: Request, res: Response): Promise<Response> => {
     return res.status(404).send();
 });
 
-app.get("/todos", async (req: Request, res: Response): Promise<Response> => {
-    const connection: Connection = await createConnection();
+app.put("/rooms", async (req: Request, res: Response): Promise<Response> => {
+    const connection = await createConnection();
 
-    const userRepository: Repository<User> = connection.getRepository(User);
-    // const todoRepository: Repository<Todo> = connection.getRepository(Todo);
+    const roomRepository: Repository<Room> = connection.getRepository(Room);
 
-    const user: User[] | undefined = await userRepository.find({
-        where: {
-            id: 2
-        },
-        relations: ["todos"]
-    });
+    const room: Room | undefined = await roomRepository.findOne(req.body.id);
+
+    if (room !== undefined) {
+        room.title = req.body.title;
+
+        await roomRepository.save(room);
+
+        connection.close();
+
+        return res.json({
+            room
+        });
+    }
 
     connection.close();
 
-    return res.json({
-        user
-    });
+    return res.status(404).send();
+});
 
-    // const user: User | undefined = await userRepository.findOne(2);
-    
-    // if (user) {
-    //     const todo1: Todo = new Todo('Programar em React', false, user);
-    //     // todo.save(); SRP != SOLID
-    //     await todoRepository.save(todo1);
-        
-    //     // Domain Driven Design | Clean Code | Clean Architecture | SOLID | Boundaries
-    //     const todo2: Todo = new Todo('Programar em Angular', false, user);
-    //     await todoRepository.save(todo2);
+app.put("/reservations/checkin", async (req: Request, res: Response): Promise<Response> => {
+    const connection = await createConnection();
 
-    //     connection.close();
-        
-    //     return res.json({
-    //         todo1,
-    //         todo2
-    //     });
-    // }
+    const reservationRepository: Repository<Reservation> = connection.getRepository(Reservation);
 
-    // connection.close();
+    const reservation: Reservation | undefined = await reservationRepository.findOne(req.body.id);
 
-    // return res.status(404).send();
+    if (reservation !== undefined) {
+        reservation.checkin = true;
+
+        await reservationRepository.save(reservation);
+
+        connection.close();
+
+        return res.json({
+           reservation
+        });
+    }
+
+    connection.close();
+
+    return res.status(404).send();
+});
+
+app.put("/reservations/checkout", async (req: Request, res: Response): Promise<Response> => {
+    const connection = await createConnection();
+
+    const reservationRepository: Repository<Reservation> = connection.getRepository(Reservation);
+
+    const reservation: Reservation | undefined = await reservationRepository.findOne(req.body.id);
+
+    if (reservation !== undefined) {
+        reservation.checkout = true;
+
+        await reservationRepository.save(reservation);
+
+        connection.close();
+
+        return res.json({
+           reservation
+        });
+    }
+
+    connection.close();
+
+    return res.status(404).send();
 });
 
 

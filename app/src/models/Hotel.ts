@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import Room from "./Rooms";
+import Room from "./Room";
 
 // Entidade representa uma tables no DB
 @Entity("hotels")

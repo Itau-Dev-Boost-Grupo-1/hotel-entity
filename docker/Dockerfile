@@ -7,6 +7,7 @@ RUN chown -R 1000:1000 /app
 
 RUN npm i -g typescript
 RUN npm i -g nodemon
+RUN npm install
 
 CMD rm -rf /app/app/dist && sh -c "nodemon dist/main.js & tsc -w"
 
